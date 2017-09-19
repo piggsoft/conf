@@ -1,4 +1,5 @@
 rootProject.name = 'conf'
 include 'server'
 include 'client'
+include 'core'
 

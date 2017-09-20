@@ -1,5 +1,6 @@
 package com.piggsoft.conf.core
 
+import com.piggsoft.conf.core.message.FileChange
 import io.netty.buffer.ByteBuf
 import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ByteToMessageDecoder
@@ -14,7 +15,6 @@ import io.netty.handler.codec.ByteToMessageDecoder
 class ConfDecoder : ByteToMessageDecoder() {
 
     override fun decode(ctx: ChannelHandlerContext, buf: ByteBuf, out: MutableList<Any>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         //消息长度必须大于header长度
         if (buf.readableBytes() >= MessageUtils.headerLength) {
             buf.markReaderIndex()
@@ -23,16 +23,32 @@ class ConfDecoder : ByteToMessageDecoder() {
             val sessionId = buf.readInt()
             val command = buf.readInt()
             val bodyLength = buf.readInt()
-            var bytes: ByteArray
+            var bytes: ByteArray? = null
             if (bodyLength > 0) {
                 buf.resetReaderIndex()
                 if (buf.readableBytes() >= bodyLength) {
+                    bytes = ByteArray(bodyLength)
                     buf.readBytes(bodyLength).readBytes(bytes)
                 }
             }
-            out += Message(encode, encrypt, sessionId, command, bodyLength, bytes)
+            out += Message<Any>().apply {
+                this.encode = encode
+                this.encrypt = encrypt
+                this.sessionId = sessionId
+                this.command = command
+                this.bodyLength = bodyLength
+                this.body = createBody(command, bytes)
+            }
         }
 
+    }
+
+    private inline fun createBody(command: Int, bodyBytes: ByteArray?) : Any? {
+        return when(command) {
+            CommandType.PING.command -> null
+            CommandType.FILECHANGE.command -> deserialize<FileChange>(bodyBytes)
+            else -> null
+        }
     }
 
 }

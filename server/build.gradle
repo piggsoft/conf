@@ -48,10 +48,11 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib" // Required for Kotlin integration
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8" // Required for Kotlin integration
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile "org.jetbrains.kotlin:kotlin-reflect"
     compile "io.netty:netty-all:4.1.15.Final"
+    compile project(':core')
 
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile "org.jetbrains.kotlin:kotlin-test"

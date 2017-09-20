@@ -17,7 +17,15 @@ package com.piggsoft.conf.core
  * …    …    …    …
  * 长度为整型，占4个字节
  */
-data class Message<out T>(val encode: Byte, val encrypt: Byte, val sessionId: Int, val command: Int, val bodyLength: Int, val body: T) {
-    constructor(sessionid: Int, command: Int, bodyLength: Int, body: T) :
-            this(MessageUtils.defaultEncode, MessageUtils.defaultEncrypt, sessionid, command, bodyLength, body)
+class Message<T> {
+
+    var encode: Byte = MessageUtils.defaultEncode
+    var encrypt: Byte = MessageUtils.defaultEncrypt
+    var sessionId: Int = 1
+    var command: Int = 0
+    var bodyLength: Int = 0
+    var body: T? = null
+
 }
+
+val pingMessage = Message<Any>()

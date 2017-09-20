@@ -1,5 +1,8 @@
 package com.piggsoft.conf.client
 
+import com.piggsoft.conf.core.ConfDecoder
+import com.piggsoft.conf.core.ConfEncoder
+import com.piggsoft.conf.core.pingMessage
 import io.netty.bootstrap.Bootstrap
 import io.netty.buffer.Unpooled
 import io.netty.channel.Channel
@@ -44,8 +47,8 @@ class Client(private val serverHost: String, private val serverPort: Int) {
                         ch?.pipeline()
                                 ?.addLast(IdleStateHandler(0, 5, 0, TimeUnit.SECONDS))
                                 ?.addLast(IdleStateTrigger())
-                                ?.addLast(StringDecoder())
-                                ?.addLast(StringEncoder())
+                                ?.addLast(ConfDecoder())
+                                ?.addLast(ConfEncoder())
                                 ?.addLast(ClientHander())
                                 ?.addLast(object: ChannelInboundHandlerAdapter() {
                                     override fun channelUnregistered(ctx: ChannelHandlerContext?) {
@@ -89,14 +92,11 @@ fun main(args: Array<String>) {
 @ChannelHandler.Sharable
 class IdleStateTrigger : ChannelDuplexHandler() {
 
-    private val HEARTBEAT_SEQUENCE = Unpooled.unreleasableBuffer(Unpooled.copiedBuffer("Heartbeat",
-            CharsetUtil.UTF_8))
-
     override fun userEventTriggered(ctx: ChannelHandlerContext?, evt: Any?) {
         when (evt) {
             is IdleStateEvent -> {
                 if (IdleState.WRITER_IDLE == evt.state())
-                    ctx?.channel()?.writeAndFlush(HEARTBEAT_SEQUENCE.duplicate())
+                    ctx?.channel()?.writeAndFlush(pingMessage)
                             ?.addListener(ChannelFutureListener.CLOSE_ON_FAILURE)
             }
             else -> super.userEventTriggered(ctx, evt)
@@ -106,8 +106,7 @@ class IdleStateTrigger : ChannelDuplexHandler() {
 
 class ClientHander : ChannelInboundHandlerAdapter() {
     override fun channelInactive(ctx: ChannelHandlerContext?) {
-        println("激活时间是：${Date()}")
-        println("HeartBeatClientHandler channelInactive")
+        println("停止时间是：${Date()}")
         super.channelInactive(ctx)
     }
 
@@ -116,8 +115,7 @@ class ClientHander : ChannelInboundHandlerAdapter() {
     }
 
     override fun channelActive(ctx: ChannelHandlerContext?) {
-        println("停止时间是：${Date()}")
-        println("HeartBeatClientHandler channelActive")
+        println("激活时间是：${Date()}")
         super.channelActive(ctx)
     }
 }

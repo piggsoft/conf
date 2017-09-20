@@ -1,5 +1,8 @@
 package com.piggsoft.conf.server.netty
 
+import com.piggsoft.conf.core.ConfDecoder
+import com.piggsoft.conf.core.ConfEncoder
+import com.piggsoft.conf.core.Message
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelHandlerContext
@@ -53,8 +56,8 @@ class PipelineInitializer : ChannelInitializer<SocketChannel>() {
         ch?.pipeline()
                 ?.addLast(IdleStateHandler(1, 0, 0, TimeUnit.MINUTES))
                 ?.addLast(IdleStateTrigger())
-                ?.addLast("decoder", StringDecoder())
-                ?.addLast("encoder", StringEncoder())
+                ?.addLast("decoder", ConfDecoder())
+                ?.addLast("encoder", ConfEncoder())
                 ?.addLast(ServerHander())
     }
 
@@ -83,6 +86,5 @@ class IdleStateTrigger : ChannelInboundHandlerAdapter() {
 class ServerHander : ChannelInboundHandlerAdapter() {
 
     override fun channelRead(ctx: ChannelHandlerContext?, msg: Any?) {
-        println("${ctx?.channel()?.remoteAddress()} -> Server : ${msg?.toString()}")
-    }
+        println("${ctx?.channel()?.remoteAddress()} -> Server : ${msg?.let { it as Message<Any> ; println(it.command)}}")    }
 }
